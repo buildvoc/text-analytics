@@ -99,7 +99,7 @@ sub _epdata_to_json
 
 		$subdata->{uri} = $epdata->uri;
 		
-		$final_record = {
+		my $final_record = {
 			'record' => $subdata,
 			'status' => 200,
 		};
