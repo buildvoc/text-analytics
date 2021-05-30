@@ -66,37 +66,45 @@ sub _epdata_to_json
 	}
 	elsif( $epdata->isa( "EPrints::DataObj" ) )
 	{
-		my $subdata = {};
-
 		return "" if(
 			$opts{hide_volatile} &&
 			$epdata->isa( "EPrints::DataObj::Document" ) &&
 			$epdata->has_relation( undef, "isVolatileVersionOf" )
-		  );
+		 );
+
+		my $subdata = {};
 
 		foreach my $field ($epdata->get_dataset->get_fields)
 		{
 			next if !$field->get_property( "export_as_xml" );
+			
 			next if defined $field->{sub_name};
+			
 			my $value = $field->get_value( $epdata );
+			
 			next if !EPrints::Utils::is_set( $value );
+			
 			my $field_name = $field->get_name;
-            $field_name = "id" if $field_name eq "eprintid" && $depth == 1;
-            $field_name = "description" if $field_name eq "abstract";
-            $field_name = "subject" if $field_name eq "subjects";
-            $field_name = "identifier_url" if $field_name eq "official_url";
-            $field_name = "identifier_number" if $field_name eq "number";          
-            $field_name = "status" if $field_name eq "eprint_status";
-            $field_name = "record" if $field_name eq "full_text_status";
-            $subdata->{$field_name} = $value;
+            		
+			$field_name = "id" if $field_name eq "eprintid" && $depth == 1;
+            		$field_name = "description" if $field_name eq "abstract";
+            		$field_name = "subject" if $field_name eq "subjects";
+            		$field_name = "identifier_url" if $field_name eq "official_url";
+            		$field_name = "identifier_number" if $field_name eq "number";          
+            		$field_name = "status" if $field_name eq "eprint_status";
+            		$field_name = "record" if $field_name eq "full_text_status";
+			
+            		$subdata->{$field_name} = $value;
 		}
 
-		$subdata->{uri} = $epdata->uri;$subdata->{status} = "200";
-
+		$subdata->{uri} = $epdata->uri;
 		
+		$final_record = {
+			'record' => $subdata,
+			'status' => 200,
+		};
 
-		return $self->_epdata_to_json( $subdata, $depth + 1, 0, %opts );
-
+		return $self->_epdata_to_json( $final_record, $depth + 1, 0, %opts );
 	}
 }
 
